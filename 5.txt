@@ -1,0 +1,31 @@
+DROP FUNCTION IF EXISTS Divide;
+
+DELIMITER //
+
+CREATE FUNCTION Divide(numerator FLOAT, denominator FLOAT)
+RETURNS FLOAT
+DETERMINISTIC 
+NO SQL
+BEGIN
+    DECLARE result FLOAT;
+    SET result = numerator / denominator;
+    RETURN result;
+END //
+
+DELIMITER ;
+
+WITH temp_order_details AS (
+    SELECT *
+    FROM order_details
+)
+
+SELECT *,
+Divide(
+	quantity, 
+    (SELECT SUM(quantity) 
+		FROM temp_order_details 
+        GROUP BY order_id 
+        HAVING order_id = order_details.order_id)
+	) as percent_from_order
+
+FROM order_details
